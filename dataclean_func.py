@@ -608,3 +608,12 @@ def make_task_outcomes(df):
             task_summary=pd.concat([task_summary, row])
     return task_summary
 
+
+def replace_outliers_with_nan(df, column):
+    Q1 = df[column].quantile(0.25)
+    Q3 = df[column].quantile(0.75)
+    IQR = Q3 - Q1
+    lower_bound = Q1- 1.5 * IQR
+    upper_bound = Q3 + 1.5 * IQR
+    df[column]=df[column].apply(lambda x: np.nan if x<lower_bound or x>upper_bound else x)
+    return df
