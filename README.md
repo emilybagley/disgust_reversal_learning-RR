@@ -1,4 +1,4 @@
-Contains example analysis scripts for all planned model-agnostic analyses in the Registered Report, as well as the power analysis(included in the stage 1 Registered Report)
+<b>Contains example analysis scripts for all planned model-agnostic analyses in the Registered Report, as well as the power analysis(included in the stage 1 Registered Report)</b>
 
 00_data_checks: will be used to make rolling exclusions. Look at data from one participant and determine if they passed the exclusion criteria.
 0_data_clearning: Will be used to transform files downloaded from jatos (used to host the online experiment) to useable dataframes for use in subsequent analyses
