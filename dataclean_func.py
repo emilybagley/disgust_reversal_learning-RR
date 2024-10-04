@@ -199,48 +199,6 @@ def vid_ratings(df, participant_no, to_do):
     else:
         return "ERROR"
 
-def wide_ratings(chosen_stim_df):
-    wide_ratings_df=pd.DataFrame()
-    for i in set(chosen_stim_df.participant_no):
-        sub_df=chosen_stim_df[chosen_stim_df.participant_no==i]
-        disgust=sub_df[sub_df.trial_type=='disgust'].reset_index()
-        fear=sub_df[sub_df.trial_type=='disgust'].reset_index()
-        points=sub_df[sub_df.trial_type=='points'].reset_index()
-        row = pd.DataFrame({
-            'participant_no': [i],
-            'disgust_vid': [disgust.at[0, 'Vid']],
-            'fear_vid': [fear.at[0, 'Vid']],
-            'd_unpleasant_1': [disgust.at[0, 'unpleasant_1'].tolist()],
-            'd_unpleasant_2': [disgust.at[0, 'unpleasant_2'].tolist()],
-            'd_arousing_1': [disgust.at[0, 'arousing_1'].tolist()],
-            'd_arousing_2': [disgust.at[0, 'arousing_2'].tolist()],
-            'd_disgusting_1': [disgust.at[0, 'disgusting_1'].tolist()],
-            'd_disgusting_2': [disgust.at[0, 'disgusting_2'].tolist()],
-            'd_frightening_1': [disgust.at[0, 'frightening_1'].tolist()],
-            'd_frightening_2': [disgust.at[0, 'frightening_2'].tolist()],
-            'f_unpleasant_1': [fear.at[0, 'unpleasant_1'].tolist()],
-            'f_unpleasant_2': [fear.at[0, 'unpleasant_2'].tolist()],
-            'f_arousing_1': [fear.at[0, 'arousing_1'].tolist()],
-            'f_arousing_2': [fear.at[0, 'arousing_2'].tolist()],
-            'f_disgusting_1': [fear.at[0, 'disgusting_1'].tolist()],
-            'f_disgusting_2': [fear.at[0, 'disgusting_2'].tolist()],
-            'f_frightening_1': [fear.at[0, 'frightening_1'].tolist()],
-            'f_frightening_2': [fear.at[0, 'frightening_2'].tolist()],
-            'd_valence_hab': disgust['unpleasant_2']-disgust['unpleasant_1'],
-            'd_arousal_hab': disgust['arousing_2']-disgust['arousing_1'],
-            'd_disgust_hab': disgust['disgusting_2']-disgust['disgusting_1'],
-            'd_fear_hab': disgust['frightening_2']-disgust['frightening_1'],
-            'f_valence_hab': fear['unpleasant_2']-fear['unpleasant_1'],
-            'f_arousal_hab': fear['arousing_2']-fear['arousing_1'],
-            'f_disgust_hab': fear['disgusting_2']-fear['disgusting_1'],
-            'f_fear_hab': fear['frightening_2']-fear['frightening_1'],
-            'points_unpleasant': [points.at[0, 'unpleasant_1'].tolist()],
-            'points_arousing': [points.at[0, 'arousing_1'].tolist()],
-            'points_disgusting': [points.at[0, 'disgusting_1'].tolist()],
-            'points_frightening': [points.at[0, 'frightening_1'].tolist()],
-        })
-        wide_ratings_df=pd.concat([wide_ratings_df, row])
-    return wide_ratings_df
 
 ##REVERSAL LEARNING TASK
 #create_block_df - creates a dataframe with all needed data from one experimental block
@@ -251,6 +209,13 @@ def create_block_df(df, block_name, participant_no):
     block=task_df[task_df.block_type==block_name]
     block.reset_index(inplace=True)
     block.drop(['level_0', 'index'], axis=1, inplace=True)
+
+    #extract fractal pair used:
+    fractal_pair=pd.DataFrame(set(block.correct_stim)).dropna()
+    fractal_pair.sort_values(by=[0], inplace=True)
+    fractals=list(fractal_pair[0])
+    fractal_val={'F000', 'F009', 'F010', 'F012', 'F014', 'F015', 'F018', 'F020'}
+    fractal_vals = [next((val for val in fractal_val if val in item), item) for item in fractals]
 
     for i in set(block.n_trial):
         trial=block[block.n_trial==i]
@@ -277,7 +242,8 @@ def create_block_df(df, block_name, participant_no):
             'block_type': trial.block_type[0],
             'participant_no': trial.participant_no[0],#
             'timed_out': 0,
-            'time_taken': (block.time_elapsed.iloc[-1]-block.time_elapsed[0])/60000 ##in minutes
+            'time_taken': (block.time_elapsed.iloc[-1]-block.time_elapsed[0])/60000, ##in minutes
+            'fractals': fractal_vals
         })
         block_df=pd.concat([block_df, pd.DataFrame(row)])
     block_df.reset_index(inplace=True)
@@ -378,21 +344,21 @@ def make_task_understood(df, complete_task_df, to_do):
         #attention checks 
         attention=sub_df[sub_df.trial_var=="attention_check"].reset_index()
         if attention.loc[0].response == "{'Q0': ['Apple', 'Banana']}":
-            block1=1
+            block1=2
         elif (attention.loc[0].response == "{'Q0': ['Banana']}") or (attention.loc[0].response == "{'Q0': ['Spoon']}"):
-            block1=0.5
+            block1=1
         else:
             block1=0
         if attention.loc[1].response== "{'Q0': ['Bowl', 'Spoon']}":
-            block2=1
+            block2=2
         elif (attention.loc[1].response== "{'Q0': ['Bowl']}") or (attention.loc[1].response== "{'Q0': ['Spoon']}"):
-            block2=0.5
+            block2=1
         else:
             block2=0
         if attention.loc[2].response== "{'Q0': ['River', 'Mountain']}":
-            block3=1
+            block3=2
         elif (attention.loc[2].response== "{'Q0': ['River']}") or (attention.loc[2].response== "{'Q0': ['Mountain']}"):
-            block3=0.5
+            block3=1
         else:
             block3=0
 
@@ -430,7 +396,7 @@ def make_task_understood(df, complete_task_df, to_do):
         task_understood_temp['criteria_total']=task_understood_temp[['criteria_f', 'criteria_d', 'criteria_p']].sum(axis=1)
 
         ##Checking they learnt the task correctly
-        if task_understood_temp.attention_checks[0]>2 and task_understood_temp.criteria_total[0]<3 and task_understood_temp.long_breaks[0]=="No" and task_understood_temp.total_time[0]<120:
+        if task_understood_temp.attention_checks[0]>=4 and task_understood_temp.criteria_total[0]<3 and task_understood_temp.long_breaks[0]=="No" and task_understood_temp.total_time[0]<120:
             task_understood_temp['task_understood']="Yes"
         else:
             task_understood_temp['task_understood']="No"
@@ -490,7 +456,6 @@ def make_task_understood(df, complete_task_df, to_do):
     return task_understood
 
 #create a dataframe with all outcomes from the task
-
 def make_task_outcomes(df):
     blocks=["Disgust", "Fear", "Points"]
     task_summary=pd.DataFrame()
@@ -502,6 +467,7 @@ def make_task_outcomes(df):
             block_df=sub_df[sub_df.block_type==block_type].reset_index()
             block_df=block_df[block_df.trial_till_correct.notna()] ##removes trials after they timed out (if they did)
             percentage_correct=block_df['correct'].value_counts(normalize=True)[True]
+            fractals=str(block_df.fractals.iloc[-1])
 
             #perseverative and regressive errors
             n_reversal=int(block_df.iloc[-1].reversal)+1
@@ -603,7 +569,8 @@ def make_task_outcomes(df):
                 'disgust_block': disgust,
                 'fear_block': fear,
                 'points_block': points,
-                'participant_no': participant
+                'participant_no': participant,
+                'fractals': fractals
             })
             task_summary=pd.concat([task_summary, row])
     return task_summary
