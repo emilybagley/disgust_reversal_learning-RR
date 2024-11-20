@@ -28,13 +28,12 @@ def mixed_effects_power_analysis(num_subjects, num_sims):
         df=pd.melt(df, id_vars=['participant_no'], var_name='Condition', value_name='Perseveration') ##convert to long form
 
         #run mixed effects model on simulated data
-        data=df.replace(['Disgust', 'Fear', 'Points'], [1.0,2.0,3.0])
         formula = 'Perseveration ~ Condition'
-        md=smf.mixedlm(formula, data, groups=data['participant_no'], missing='drop')
+        md=smf.mixedlm(formula, df, groups=df['participant_no'], missing='drop')
         results=md.fit()
         
         #is it significant
-        if results.pvalues.Condition < alpha:
+        if results.pvalues['Condition[T.Fear]'] < alpha:
             result="Sig"
         else:
             result="Non Sig"
