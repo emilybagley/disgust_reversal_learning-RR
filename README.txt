@@ -10,7 +10,7 @@ Planned model-agnostic analyses
 2_task_model_agnostic_analysis: Completes models 1-6. Full model-agnostic analysis of the reversal learning task
 2_task_model_agnostic_analysis_nooutliers: exactly the same as above, but excludes all outliers (>1.5IQR outside of IQR)
 
-Computational modelling analyses (specified in the analysis plan) will be completed using the hBayesDM package (https://github.com/CCS-Lab/hBayesDM). On completion of the stage 2 manuscript, full modelling code will also be added to this OSF folder (in a way that is fully understandable without accessing the HBayesDM GitHub repository). 
+Computational modelling analyses (specified in the analysis plan) will be completed using the hBayesDM package which is a freely available software package for hierarchical Bayesian modelling (https://github.com/CCS-Lab/hBayesDM). On completion of the stage 2 manuscript, full modelling code will also be added to this OSF folder (in a way that is fully understandable without accessing the hBayesDM GitHub repository). 
 
 
 Power analysis
